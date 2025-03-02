@@ -1,11 +1,5 @@
 ## Projeto Sistema Seguro de Comunicação
 
-### Participantes:
-* Brenno de Sousa Lemos - 11222100597
-* Bruna de Medeiros Santos - 11222101313
-* Iago Alves de Oliveira - 11242400738
-* João Gabriel Gomes - 11222101048
-
 ### Breve explicação
 O objetivo do projeto consiste em implementar criptografia simétrica (AES), criptografia assimétrica (RSA), hashing de senhas (bcrypt) e autenticação com Tokens JWT (JSON Web Token) dentro do contexto de um sistema seguro de comunicação.
 
