@@ -1,7 +1,7 @@
 ## Projeto Sistema Seguro de Comunicação
 
 ### Breve explicação
-O objetivo do projeto consiste em implementar criptografia simétrica (AES), criptografia assimétrica (RSA), hashing de senhas (bcrypt) e autenticação com Tokens JWT (JSON Web Token) dentro do contexto de um sistema seguro de comunicação.
+O projeto consiste em implementar criptografia simétrica (AES), criptografia assimétrica (RSA), hashing de senhas (bcrypt) e autenticação com Tokens JWT (JSON Web Token) dentro do contexto de um sistema seguro de comunicação.
 
 ### Cenário
 Uma empresa deseja garantir a segurança da comunicação entre seus funcionários, protegendo mensagens sensíveis contra acessos não autorizados.<br>
