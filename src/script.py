@@ -1,4 +1,4 @@
-import bcrypt, sqlite3, time, re, os
+import bcrypt, sqlite3, time, re, os, socket
 
 def pausa():
     time.sleep(1.5)
@@ -19,8 +19,9 @@ def menu():
         1 - Realizar login
         2 - Registro de novo usuário
         3 - Consultar usuários registrados
-        4 - Testar segurança de senhas com força bruta
-        5 - Encerrar
+        4 - Consultar logs de login
+        5 - Testar segurança de senhas com força bruta
+        6 - Encerrar
     ''')
 
     opcao = str(input(' opção desejada: '))
@@ -35,9 +36,12 @@ def menu():
         consultarUsuarios()
 
     elif opcao == '4':
-        testarForcaBruta()
+        consultarLogsLogin()
 
     elif opcao == '5':
+        testarForcaBruta()
+
+    elif opcao == '6':
         executar = False
     
     else:
@@ -55,6 +59,17 @@ def bytesParaString(valor: bytes):
 def criptografarSenha(senha: str, salt: str):
     return bcrypt.hashpw(senha.encode('utf-8'), salt).decode()
 
+# Salva um registro para cada tentativa de login
+def registrarLogLogin(usuario, sucesso):
+    ip = socket.gethostbyname(socket.gethostname())
+    cursor.execute(f"INSERT INTO logs (username, sucesso, ip) VALUES (?, ?, ?)", (usuario, sucesso, ip))
+    conn.commit()
+
+# Função para obter o salt do usuário
+def obterSaltUsuario(usuario):
+    cursor.execute(f"SELECT salt FROM {nome_tabela} WHERE username=?", (usuario,))
+    return cursor.fetchone()
+
 def login(tentativas: int=0):
     limite_tentativas = 5
     tentativas += 1
@@ -68,27 +83,30 @@ def login(tentativas: int=0):
         senha = str(input('Senha: '))
 
         # Busca o salt do usuário no banco de dados
-        cursor.execute(f"SELECT salt FROM {nome_tabela} WHERE username=?", (usuario,))
-        linha = cursor.fetchone()
+        salts = obterSaltUsuario(usuario)
 
-        if linha:
-            salt = linha[0]
+        if salts:
+            salt = salts[0]
             senha_hashed = criptografarSenha(senha, stringParaBytes(salt))
 
             # Verifica se o hash da senha corresponde ao armazenado no banco de dados
             cursor.execute(f"SELECT id FROM {nome_tabela} WHERE username=? AND password_hash=?", (usuario, senha_hashed))
-            linha_2 = cursor.fetchone()
-
-            if linha_2:
-                id = linha_2[0]
-                print(f'\nLogin efetuado com sucesso! (id: {id})')
+            ids = cursor.fetchone()
+            
+            if ids:
+                id = ids[0]
+                print(f'\nLogin efetuado com sucesso! (id usuário: {id})')
+                registrarLogLogin(usuario, True)
+                pausa()
 
             else:
                 print('\nSenha incorreta!. Tentativas restantes:', (limite_tentativas-tentativas))
+                registrarLogLogin(usuario, False)
                 login(tentativas)
 
         else:
             print('\nUsuário não encontrado!')
+            registrarLogLogin(usuario, False)
             login(tentativas-1)
 
 
@@ -104,7 +122,9 @@ def validarForcaSenha(senha):
         re.search(r'[0-9]', senha) and
         # ao menos um caractere especial
         re.search(r'[\W_]', senha)):
+
         return True
+    
     return False
 
 # Salva as informações do usuário no banco de dados
@@ -160,6 +180,20 @@ def consultarUsuarios():
     
     pausa()
 
+# Exibe os logs de login no banco de dados
+def consultarLogsLogin():
+    print('\n\nLogs de login\n')
+    # Cabeçalhos das colunas
+    print(f'{"ID":<5} {"Username":<20} {"IP":<15} {"Sucesso":<10} {"Timestamp":<20}')
+    print('-' * 145)
+
+    # Corpo da tabela
+    for linha in cursor.execute('SELECT * FROM logs'):
+        id, username, ip, sucesso, timestamp = linha
+        print(f'{id:<5} {username:<20} {ip:<15} {sucesso:<10} {timestamp:<20}')
+    
+    pausa()
+
 def testarForcaBruta():
     # Lista de senhas comuns para tentativa de força bruta
     senhas_comuns = ['1234', '12345', '123456', '1234567', '123456789', '1234567890', 'password', 'senha', 'abc123', 'password1', 'senha1']
@@ -171,7 +205,7 @@ def testarForcaBruta():
     for usuario in usuarios:
         username, password_hash, salt = usuario
         salt = stringParaBytes(salt)
-        print(f'\nTentando quebrar a senha do usuário: {username}')
+        print(f'\nTentando quebrar a senha do usuário {username}...')
 
         for senha in senhas_comuns:
             # Gera o hash da senha tentativa
@@ -188,7 +222,7 @@ def testarForcaBruta():
 
 nome_tabela = 'usuarios'
 # Conexão com banco de dados
-conn = sqlite3.connect('users.db')
+conn = sqlite3.connect('src/users.db')
 
 # Criação do cursor para comandos SQL
 cursor = conn.cursor()
@@ -204,6 +238,21 @@ cursor.execute(f'''
         password_hash VARCHAR(300) NOT NULL,
         salt VARCHAR(300) NOT NULL,
         CONSTRAINT valor_unico UNIQUE (username)
+    )
+''')
+conn.commit()
+
+# Deleta a tabela caso exista
+# cursor.execute(f'DROP TABLE IF EXISTS logs')
+
+# Cria a tabela logs no banco de dados
+cursor.execute(f'''
+    CREATE TABLE IF NOT EXISTS logs (
+        id INTEGER PRIMARY KEY,
+        username VARCHAR(20) NOT NULL,
+        ip VARCHAR(45) NOT NULL,
+        sucesso BOOLEAN NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 ''')
 conn.commit()
