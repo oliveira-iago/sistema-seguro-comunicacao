@@ -1,0 +1,2 @@
+# Ignore arquivos .docx na pasta docs
+/docs/*.docx
