@@ -7,27 +7,33 @@ def pausa():
     time.sleep(1.5)
     input('\n> Pressione ENTER para voltar ao menu')
 
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 # Menu principal responsável por chamar as demais funções
 def menu():
     global executar
 
-    # Limpa a tela do terminal (windows ou linux)
-    os.system('cls' if os.name == 'nt' else 'clear')
+    limpar_tela()
 
-    print('''\n\n
-    SISTEMA SEGURO DE COMUNICAÇÃO
-
-        Digite a opção desejada
-
-        1 - Realizar login
-        2 - Registro de novo usuário
-        3 - Consultar usuários registrados
-        4 - Consultar logs de login
-        5 - Testar segurança de senhas com força bruta
-        6 - Encerrar
+    print('''\n
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                                                                  ║
+    ║                  SISTEMA SEGURO DE COMUNICAÇÃO                   ║
+    ║                                                                  ║
+    ║        Digite o número da opção desejada                         ║
+    ║                                                                  ║
+    ║        [1] - Realizar login                                      ║
+    ║        [2] - Registrar novo usuário                              ║
+    ║        [3] - Consultar usuários registrados                      ║
+    ║        [4] - Consultar logs de login                             ║
+    ║        [5] - Testar segurança de senhas com força bruta          ║
+    ║        [6] - Encerrar                                            ║
+    ║                                                                  ║
+    ╚══════════════════════════════════════════════════════════════════╝
     ''')
 
-    opcao = str(input(' opção desejada: '))
+    opcao = str(input('Opção desejada: '))
 
     if opcao == '1':
         login()
@@ -76,12 +82,17 @@ def obterSaltUsuario(usuario):
 def enviarCodigoVerificacao():
     # Gera um código aleatório de 6 dígitos
     codigo = random.randint(100000, 999999)
-    print('\n===Autenticação multifator (simulação/fictício)===')
-    print('\nUm código de verificação foi enviado para o seu celular cadastrado.')
-    print(f'Código de verificação enviado: {codigo}')
     return codigo
 
 def login(tentativas: int=0):
+    print(f'''\n
+                ╔════════════════════════════════╗
+                ║                                ║
+                ║        REALIZAR LOGIN          ║
+                ║                                ║
+                ╚════════════════════════════════╝
+                ''')
+    
     limite_tentativas = 5
     tentativas += 1
     
@@ -107,10 +118,30 @@ def login(tentativas: int=0):
             if ids:
                 id = ids[0]
                 codigo_enviado = enviarCodigoVerificacao()
+
+                print(f'''\n
+                ╔══════════════════════════════════════════════════════════════════╗
+                ║                     (Apenas uma simulação)                       ║
+                ║                                                                  ║
+                ║                  AUTENTICAÇÃO DE DOIS FATORES                    ║
+                ║                                                                  ║
+                ║            Código de verificação enviado [{codigo_enviado}]                ║
+                ║                                                                  ║
+                ╚══════════════════════════════════════════════════════════════════╝
+                ''')
+
                 codigo_digitado = int(input('\nDigite o código de verificação recebido via SMS: '))
 
                 if codigo_digitado == codigo_enviado:
-                    print(f'\nLogin efetuado com sucesso! (id usuário: {id})')
+                    print(f'''\n
+                ╔═════════════════════════════════════════════╗
+                ║                                             ║
+                ║        LOGIN EFETUADO COM SUCESSO!          ║
+                ║                                             ║
+                ║           (ID DE USUÁRIO: {id})                ║
+                ║                                             ║
+                ╚═════════════════════════════════════════════╝
+                ''')
                     registrarLogLogin(usuario, True)
                     pausa()
                 else:
@@ -148,6 +179,14 @@ def validarForcaSenha(senha):
 
 # Salva as informações do usuário no banco de dados
 def registrarUsuario():
+    print(f'''\n
+                ╔══════════════════════════════════════════╗
+                ║                                          ║
+                ║        REGISTRO DE NOVO USUÁRIO          ║
+                ║                                          ║
+                ╚══════════════════════════════════════════╝
+                ''')
+    
     usuario = str(input('\nUsuário: ')).lower()
     senha = str(input('Senha: '))
 
@@ -187,7 +226,13 @@ def registrarUsuario():
 
 # Exibe as informações dos usuários cadastrados no banco de dados
 def consultarUsuarios():
-    print('\n\nUsuários registrados\n')
+    print(f'''\n
+                ╔══════════════════════════════════════════════════╗
+                ║                                                  ║
+                ║        CONSULTA DE USUÁRIOS REGISTRADOS          ║
+                ║                                                  ║
+                ╚══════════════════════════════════════════════════╝
+                ''')
     # Cabeçalhos das colunas
     print(f'{"ID":<5} {"Username":<20} {"Password Hash":<60} {"Salt":<60}')
     print('-' * 145)
@@ -201,7 +246,13 @@ def consultarUsuarios():
 
 # Exibe os logs de login no banco de dados
 def consultarLogsLogin():
-    print('\n\nLogs de login\n')
+    print(f'''\n
+                ╔═══════════════════════════════════════════╗
+                ║                                           ║
+                ║        CONSULTA DE LOGS DE LOGINS         ║
+                ║                                           ║
+                ╚═══════════════════════════════════════════╝
+                ''')
     # Cabeçalhos das colunas
     print(f'{"ID":<5} {"Username":<20} {"IP":<15} {"Sucesso":<10} {"Timestamp":<20}')
     print('-' * 145)
@@ -214,8 +265,15 @@ def consultarLogsLogin():
     pausa()
 
 def testarForcaBruta():
-    # Lista de senhas comuns para tentativa de força bruta
-    senhas_comuns = ['1234', '12345', '123456', '1234567', '123456789', '1234567890', 'password', 'senha', 'abc123', 'password1', 'senha1']
+    print(f'''\n
+                ╔══════════════════════════════════════╗
+                ║                                      ║
+                ║        TESTES DE FORÇA BRUTA         ║
+                ║                                      ║
+                ╚══════════════════════════════════════╝
+                ''')
+    # Lista de senhas comuns
+    senhas_comuns = ['1234', '12345', '123456', '1234567', '12345678', '123456789', '1234567890', 'password', 'senha', 'abc123', 'password1', 'senha1']
 
     # Busca todos os usuários e suas senhas hash no banco de dados
     cursor.execute(f"SELECT username, password_hash, salt FROM {nome_tabela}")
@@ -242,9 +300,14 @@ def testarForcaBruta():
 
     pausa()
 
+
 nome_tabela = 'usuarios'
+
+# Obtém o caminho atual de execução do script
+caminho_atual = os.path.dirname(os.path.abspath(__file__))
+
 # Conexão com banco de dados
-conn = sqlite3.connect('src/users.db')
+conn = sqlite3.connect(os.path.join(caminho_atual, 'users.db'))
 
 # Criação do cursor para comandos SQL
 cursor = conn.cursor()
