@@ -19,7 +19,7 @@ def menu():
     print('''\n
     ╔══════════════════════════════════════════════════════════════════╗
     ║                                                                  ║
-    ║                  SISTEMA SEGURO DE COMUNICAÇÃO                   ║
+    ║                 [SISTEMA SEGURO DE COMUNICAÇÃO]                  ║
     ║                                                                  ║
     ║        Digite o número da opção desejada                         ║
     ║                                                                  ║
@@ -75,7 +75,7 @@ def registrarLogLogin(usuario, sucesso):
     conn.commit()
 
 def obterSaltUsuario(usuario):
-    cursor.execute(f"SELECT salt FROM {nome_tabela} WHERE username=?", (usuario,))
+    cursor.execute(f"SELECT salt FROM usuarios WHERE username=?", (usuario,))
     return cursor.fetchone()
 
 # Simula enviar um código de verificação via SMS
@@ -112,7 +112,7 @@ def login(tentativas: int=0):
             senha_hashed = criptografarSenha(senha, stringParaBytes(salt))
 
             # Verifica se o hash da senha corresponde ao armazenado no banco de dados
-            cursor.execute(f"SELECT id FROM {nome_tabela} WHERE username=? AND password_hash=?", (usuario, senha_hashed))
+            cursor.execute(f"SELECT id FROM usuarios WHERE username=? AND password_hash=?", (usuario, senha_hashed))
             ids = cursor.fetchone()
             
             if ids:
@@ -203,7 +203,7 @@ def registrarUsuario():
         senha_hashed = criptografarSenha(senha, salt)
 
         try:
-            cursor.execute(f"INSERT INTO {nome_tabela} (username, password_hash, salt) VALUES(?, ?, ?)", (usuario, senha_hashed, bytesParaString(salt)))
+            cursor.execute(f"INSERT INTO usuarios (username, password_hash, salt) VALUES(?, ?, ?)", (usuario, senha_hashed, bytesParaString(salt)))
             conn.commit()
             print('\nUsuário registrado com sucesso!')
             pausa()
@@ -238,7 +238,7 @@ def consultarUsuarios():
     print('-' * 145)
 
     # Corpo da tabela
-    for linha in cursor.execute(f'SELECT * FROM {nome_tabela}'):
+    for linha in cursor.execute(f'SELECT * FROM usuarios'):
         id, username, password_hash, salt = linha
         print(f'{id:<5} {username:<20} {password_hash:<60} {salt:<60}')
     
@@ -276,7 +276,7 @@ def testarForcaBruta():
     senhas_comuns = ['1234', '12345', '123456', '1234567', '12345678', '123456789', '1234567890', 'password', 'senha', 'abc123', 'password1', 'senha1']
 
     # Busca todos os usuários e suas senhas hash no banco de dados
-    cursor.execute(f"SELECT username, password_hash, salt FROM {nome_tabela}")
+    cursor.execute(f"SELECT username, password_hash, salt FROM usuarios")
     usuarios = cursor.fetchall()
 
     if usuarios:
@@ -285,13 +285,18 @@ def testarForcaBruta():
             salt = stringParaBytes(salt)
             print(f'\nTentando quebrar a senha do usuário {username}...')
 
+            tempo_inicio = time.time()
+
             for senha in senhas_comuns:
                 # Gera o hash da senha tentativa
                 senha_hashed = criptografarSenha(senha, salt)
 
                 # Verifica se o hash gerado corresponde ao armazenado no banco de dados
                 if senha_hashed == password_hash:
+                    tempo_fim = time.time()
+                    diferenca_tempo = tempo_fim - tempo_inicio
                     print(f'Senha encontrada para o usuário {username}: {senha}')
+                    print(f'Tempo para quebrar a senha: {diferenca_tempo:.2f} segundos')
                     break
             else:
                 print(f'Não foi possível quebrar a senha do usuário {username} com a lista de senhas comuns.')
@@ -300,8 +305,6 @@ def testarForcaBruta():
 
     pausa()
 
-
-nome_tabela = 'usuarios'
 
 # Obtém o caminho atual de execução do script
 caminho_atual = os.path.dirname(os.path.abspath(__file__))
@@ -313,11 +316,11 @@ conn = sqlite3.connect(os.path.join(caminho_atual, 'users.db'))
 cursor = conn.cursor()
 
 # Deleta a tabela caso exista
-# cursor.execute(f'DROP TABLE IF EXISTS {nome_tabela}')
+# cursor.execute(f'DROP TABLE IF EXISTS usuarios')
 
 # Cria a tabela usuários no banco de dados
 cursor.execute(f'''
-    CREATE TABLE IF NOT EXISTS {nome_tabela} (
+    CREATE TABLE IF NOT EXISTS usuarios (
         id INTEGER PRIMARY KEY, 
         username VARCHAR(20) NOT NULL,
         password_hash VARCHAR(300) NOT NULL,
