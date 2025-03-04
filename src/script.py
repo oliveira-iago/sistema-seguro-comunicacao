@@ -86,11 +86,11 @@ def enviarCodigoVerificacao():
 
 def login(tentativas: int=0):
     print(f'''\n
-                ╔════════════════════════════════╗
-                ║                                ║
-                ║        REALIZAR LOGIN          ║
-                ║                                ║
-                ╚════════════════════════════════╝
+    ╔════════════════════════════════╗
+    ║                                ║
+    ║        REALIZAR LOGIN          ║
+    ║                                ║
+    ╚════════════════════════════════╝
                 ''')
     
     limite_tentativas = 5
@@ -120,27 +120,27 @@ def login(tentativas: int=0):
                 codigo_enviado = enviarCodigoVerificacao()
 
                 print(f'''\n
-                ╔══════════════════════════════════════════════════════════════════╗
-                ║                     (Apenas uma simulação)                       ║
-                ║                                                                  ║
-                ║                  AUTENTICAÇÃO DE DOIS FATORES                    ║
-                ║                                                                  ║
-                ║            Código de verificação enviado [{codigo_enviado}]                ║
-                ║                                                                  ║
-                ╚══════════════════════════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════════════════════╗
+    ║                     (Apenas uma simulação)                       ║
+    ║                                                                  ║
+    ║                  AUTENTICAÇÃO DE DOIS FATORES                    ║
+    ║                                                                  ║
+    ║            Código de verificação enviado [{codigo_enviado}]                ║
+    ║                                                                  ║
+    ╚══════════════════════════════════════════════════════════════════╝
                 ''')
 
                 codigo_digitado = int(input('\nDigite o código de verificação recebido via SMS: '))
 
                 if codigo_digitado == codigo_enviado:
                     print(f'''\n
-                ╔═════════════════════════════════════════════╗
-                ║                                             ║
-                ║        LOGIN EFETUADO COM SUCESSO!          ║
-                ║                                             ║
-                ║           (ID DE USUÁRIO: {id})                ║
-                ║                                             ║
-                ╚═════════════════════════════════════════════╝
+    ╔═════════════════════════════════════════════╗
+    ║                                             ║
+    ║        LOGIN EFETUADO COM SUCESSO!          ║
+    ║                                             ║
+    ║           (ID DE USUÁRIO: {id})                ║
+    ║                                             ║
+    ╚═════════════════════════════════════════════╝
                 ''')
                     registrarLogLogin(usuario, True)
                     pausa()
@@ -180,11 +180,11 @@ def validarForcaSenha(senha):
 # Salva as informações do usuário no banco de dados
 def registrarUsuario():
     print(f'''\n
-                ╔══════════════════════════════════════════╗
-                ║                                          ║
-                ║        REGISTRO DE NOVO USUÁRIO          ║
-                ║                                          ║
-                ╚══════════════════════════════════════════╝
+    ╔══════════════════════════════════════════╗
+    ║                                          ║
+    ║        REGISTRO DE NOVO USUÁRIO          ║
+    ║                                          ║
+    ╚══════════════════════════════════════════╝
                 ''')
     
     usuario = str(input('\nUsuário: ')).lower()
@@ -227,15 +227,16 @@ def registrarUsuario():
 # Exibe as informações dos usuários cadastrados no banco de dados
 def consultarUsuarios():
     print(f'''\n
-                ╔══════════════════════════════════════════════════╗
-                ║                                                  ║
-                ║        CONSULTA DE USUÁRIOS REGISTRADOS          ║
-                ║                                                  ║
-                ╚══════════════════════════════════════════════════╝
+    ╔══════════════════════════════════════════════════╗
+    ║                                                  ║
+    ║        CONSULTA DE USUÁRIOS REGISTRADOS          ║
+    ║                                                  ║
+    ╚══════════════════════════════════════════════════╝
                 ''')
     # Cabeçalhos das colunas
+    print('═' * 145)
     print(f'{"ID":<5} {"Username":<20} {"Password Hash":<60} {"Salt":<60}')
-    print('-' * 145)
+    print('═' * 145)
 
     # Corpo da tabela
     for linha in cursor.execute(f'SELECT * FROM usuarios'):
@@ -247,15 +248,16 @@ def consultarUsuarios():
 # Exibe os logs de login no banco de dados
 def consultarLogsLogin():
     print(f'''\n
-                ╔═══════════════════════════════════════════╗
-                ║                                           ║
-                ║        CONSULTA DE LOGS DE LOGINS         ║
-                ║                                           ║
-                ╚═══════════════════════════════════════════╝
+    ╔═══════════════════════════════════════════╗
+    ║                                           ║
+    ║        CONSULTA DE LOGS DE LOGINS         ║
+    ║                                           ║
+    ╚═══════════════════════════════════════════╝
                 ''')
     # Cabeçalhos das colunas
+    print('═' * 145)
     print(f'{"ID":<5} {"Username":<20} {"IP":<15} {"Sucesso":<10} {"Timestamp":<20}')
-    print('-' * 145)
+    print('═' * 145)
 
     # Corpo da tabela
     for linha in cursor.execute('SELECT * FROM logs'):
@@ -266,11 +268,11 @@ def consultarLogsLogin():
 
 def testarForcaBruta():
     print(f'''\n
-                ╔══════════════════════════════════════╗
-                ║                                      ║
-                ║        TESTES DE FORÇA BRUTA         ║
-                ║                                      ║
-                ╚══════════════════════════════════════╝
+    ╔══════════════════════════════════════╗
+    ║                                      ║
+    ║        TESTES DE FORÇA BRUTA         ║
+    ║                                      ║
+    ╚══════════════════════════════════════╝
                 ''')
     # Lista de senhas comuns
     senhas_comuns = ['1234', '12345', '123456', '1234567', '12345678', '123456789', '1234567890', 'password', 'senha', 'abc123', 'password1', 'senha1']
@@ -315,9 +317,6 @@ conn = sqlite3.connect(os.path.join(caminho_atual, 'users.db'))
 # Criação do cursor para comandos SQL
 cursor = conn.cursor()
 
-# Deleta a tabela caso exista
-# cursor.execute(f'DROP TABLE IF EXISTS usuarios')
-
 # Cria a tabela usuários no banco de dados
 cursor.execute(f'''
     CREATE TABLE IF NOT EXISTS usuarios (
@@ -329,9 +328,6 @@ cursor.execute(f'''
     )
 ''')
 conn.commit()
-
-# Deleta a tabela caso exista
-# cursor.execute(f'DROP TABLE IF EXISTS logs')
 
 # Cria a tabela logs no banco de dados
 cursor.execute(f'''
