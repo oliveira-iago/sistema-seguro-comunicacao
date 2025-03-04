@@ -1,4 +1,7 @@
-import bcrypt, sqlite3, time, re, os, socket
+# Iago Leonardo Alves de Oliveira
+# RGM: 11242400738
+
+import bcrypt, sqlite3, time, re, os, socket, random
 
 def pausa():
     time.sleep(1.5)
@@ -65,10 +68,18 @@ def registrarLogLogin(usuario, sucesso):
     cursor.execute(f"INSERT INTO logs (username, sucesso, ip) VALUES (?, ?, ?)", (usuario, sucesso, ip))
     conn.commit()
 
-# Função para obter o salt do usuário
 def obterSaltUsuario(usuario):
     cursor.execute(f"SELECT salt FROM {nome_tabela} WHERE username=?", (usuario,))
     return cursor.fetchone()
+
+# Simula enviar um código de verificação via SMS
+def enviarCodigoVerificacao():
+    # Gera um código aleatório de 6 dígitos
+    codigo = random.randint(100000, 999999)
+    print('\n===Autenticação multifator (simulação/fictício)===')
+    print('\nUm código de verificação foi enviado para o seu celular cadastrado.')
+    print(f'Código de verificação enviado: {codigo}')
+    return codigo
 
 def login(tentativas: int=0):
     limite_tentativas = 5
@@ -95,9 +106,17 @@ def login(tentativas: int=0):
             
             if ids:
                 id = ids[0]
-                print(f'\nLogin efetuado com sucesso! (id usuário: {id})')
-                registrarLogLogin(usuario, True)
-                pausa()
+                codigo_enviado = enviarCodigoVerificacao()
+                codigo_digitado = int(input('\nDigite o código de verificação recebido via SMS: '))
+
+                if codigo_digitado == codigo_enviado:
+                    print(f'\nLogin efetuado com sucesso! (id usuário: {id})')
+                    registrarLogLogin(usuario, True)
+                    pausa()
+                else:
+                    print('\nCódigo de verificação incorreto!')
+                    registrarLogLogin(usuario, False)
+                    login(tentativas)
 
             else:
                 print('\nSenha incorreta!. Tentativas restantes:', (limite_tentativas-tentativas))
@@ -202,21 +221,24 @@ def testarForcaBruta():
     cursor.execute(f"SELECT username, password_hash, salt FROM {nome_tabela}")
     usuarios = cursor.fetchall()
 
-    for usuario in usuarios:
-        username, password_hash, salt = usuario
-        salt = stringParaBytes(salt)
-        print(f'\nTentando quebrar a senha do usuário {username}...')
+    if usuarios:
+        for usuario in usuarios:
+            username, password_hash, salt = usuario
+            salt = stringParaBytes(salt)
+            print(f'\nTentando quebrar a senha do usuário {username}...')
 
-        for senha in senhas_comuns:
-            # Gera o hash da senha tentativa
-            senha_hashed = criptografarSenha(senha, salt)
+            for senha in senhas_comuns:
+                # Gera o hash da senha tentativa
+                senha_hashed = criptografarSenha(senha, salt)
 
-            # Verifica se o hash gerado corresponde ao armazenado no banco de dados
-            if senha_hashed == password_hash:
-                print(f'Senha encontrada para o usuário {username}: {senha}')
-                break
-        else:
-            print(f'Não foi possível quebrar a senha do usuário {username} com a lista de senhas comuns.')
+                # Verifica se o hash gerado corresponde ao armazenado no banco de dados
+                if senha_hashed == password_hash:
+                    print(f'Senha encontrada para o usuário {username}: {senha}')
+                    break
+            else:
+                print(f'Não foi possível quebrar a senha do usuário {username} com a lista de senhas comuns.')
+    else:
+        print('\nNão há usuários registrados no banco de dados.')
 
     pausa()
 
